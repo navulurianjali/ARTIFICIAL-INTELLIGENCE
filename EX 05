@@ -1,0 +1,101 @@
+from collections import deque
+
+class State:
+    def __init__(self, missionaries, cannibals, boat, parent=None):
+        self.missionaries = missionaries  
+        self.cannibals = cannibals        
+        self.boat = boat                  
+        self.parent = parent              
+
+    def is_valid(self, total_m, total_c):
+        if self.missionaries < 0 or self.cannibals < 0:
+            return False
+        if self.missionaries > total_m or self.cannibals > total_c:
+            return False
+        left_m, left_c = self.missionaries, self.cannibals
+        right_m = total_m - left_m
+        right_c = total_c - left_c
+
+        if (left_m > 0 and left_m < left_c) or (right_m > 0 and right_m < right_c):
+            return False
+        return True
+
+    def is_goal(self, total_m, total_c):
+        return self.missionaries == 0 and self.cannibals == 0 and self.boat == 0
+
+    def get_successors(self, total_m, total_c):
+        successors = []
+        moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
+
+        for m, c in moves:
+            if self.boat == 1:
+                new_state = State(
+                    self.missionaries - m,
+                    self.cannibals - c,
+                    0,
+                    self
+                )
+            else:
+                new_state = State(
+                    self.missionaries + m,
+                    self.cannibals + c,
+                    1,
+                    self
+                )
+            if new_state.is_valid(total_m, total_c):
+                successors.append(new_state)
+        return successors
+
+    def __eq__(self, other):
+        return (self.missionaries == other.missionaries and
+                self.cannibals == other.cannibals and
+                self.boat == other.boat)
+
+    def __hash__(self):
+        return hash((self.missionaries, self.cannibals, self.boat))
+
+def bfs(initial_state, total_m, total_c):
+    visited = set()
+    queue = deque([initial_state])
+
+    while queue:
+        state = queue.popleft()
+        if state.is_goal(total_m, total_c):
+            return state  
+
+        visited.add(state)
+        for successor in state.get_successors(total_m, total_c):
+            if successor not in visited:
+                queue.append(successor)
+    return None
+
+def print_solution(state):
+    path = []
+    while state:
+        path.append(state)
+        state = state.parent
+    path.reverse()
+
+    for i, s in enumerate(path):
+        side = "left" if s.boat == 1 else "right"
+        print(f"Step {i}: M={s.missionaries}, C={s.cannibals}, Boat on {side} side")
+
+def main():
+    total_m = int(input("Enter number of missionaries: "))
+    total_c = int(input("Enter number of cannibals: "))
+
+    if total_m < 0 or total_c < 0 or total_m < total_c:
+        print("Invalid input. Missionaries must be >= Cannibals and non-negative.")
+        return
+
+    initial_state = State(total_m, total_c, 1)
+    goal_state = bfs(initial_state, total_m, total_c)
+
+    if goal_state:
+        print("\nSolution found:")
+        print_solution(goal_state)
+    else:
+        print("\nNo solution exists.")
+
+if __name__ == "__main__":
+    main()
