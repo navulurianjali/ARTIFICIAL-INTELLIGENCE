@@ -1,0 +1,45 @@
+import itertools
+import re
+
+def solve_cryptarithmetic(equation):
+    words = re.findall(r'[A-Z]+', equation.upper())
+    unique_chars = sorted(set(''.join(words)))
+    
+    if len(unique_chars) > 10:
+        print("Too many unique letters (more than 10). Cannot assign digits.")
+        return
+
+    first_letters = {word[0] for word in words}  
+
+    for perm in itertools.permutations(range(10), len(unique_chars)):
+        char_digit = dict(zip(unique_chars, perm))
+
+        if any(char_digit[c] == 0 for c in first_letters):
+            continue
+
+        trans_table = str.maketrans({c: str(char_digit[c]) for c in unique_chars})
+        eval_expr = equation.translate(trans_table)
+
+        try:
+            if eval(eval_expr):
+                print("\n Solution Found!")
+                print("Mapping:", char_digit)
+                print("Expression:", eval_expr)
+                return
+        except:
+            continue
+
+    print("\n No solution found.")
+
+def main():
+    print("Cryptarithmetic Solver")
+    equation = input("Enter equation (e.g., SEND + MORE == MONEY): ").strip()
+    
+    if not re.match(r'^[A-Z+== ]+$', equation.upper()):
+        print("Invalid input format. Use uppercase letters and operators like +, ==.")
+        return
+
+    solve_cryptarithmetic(equation)
+
+if __name__ == "__main__":
+    main()
