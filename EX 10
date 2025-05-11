@@ -1,0 +1,78 @@
+AIM:
+To find the shortest (least-cost) path from a start node to a goal node in a graph using both the actual cost and a heuristic estimate of the remaining cost.
+
+A* Search Algorithm Steps:
+A* uses the evaluation function:
+
+f(n)=g(n)+h(n)
+f(n)=g(n)+h(n)
+g(n) = actual cost from the start node to the current node n.
+h(n) = estimated cost from node n to the goal (heuristic).
+f(n) = total estimated cost of the cheapest solution through n.
+Step-by-Step Algorithm:
+
+Initialize:
+Open list (priority queue) with the start node.
+Closed list (visited set) as empty.
+Set g(start) = 0 and f(start) = h(start).
+Loop Until Open List is Empty:
+Select the node n from the open list with the lowest f(n).
+If n is the goal node, reconstruct and return the path.
+Move n to the closed list.
+For Each Neighbor m of n:
+If m is in the closed list, skip.
+Compute g(m) = g(n) + cost(n, m).
+Compute f(m) = g(m) + h(m).
+If m is not in open list or has a better g(m):
+Set parent(m) = n.
+Add or update m in the open list.
+Repeat until the goal is found or the open list is empty.
+
+
+import heapq
+def heuristic(node, goal):
+    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+def astar(graph, start, goal):
+    open_list = [(0, start)]
+    came_from = {}
+    g_score = {node: float('inf') for node in graph}
+    g_score[start] = 0
+    f_score = {node: float('inf') for node in graph}
+    f_score[start] = heuristic(start, goal)
+    while open_list:
+        current_f, current_node = heapq.heappop(open_list)
+        if current_node == goal:
+            path = []
+            while current_node in came_from:
+                path.insert(0, current_node)
+                current_node = came_from[current_node]
+            path.insert(0, start)
+            return path
+        for neighbor in graph[current_node]:
+            tentative_g = g_score[current_node] + 1
+            if tentative_g < g_score[neighbor]:
+                came_from[neighbor] = current_node
+                g_score[neighbor] = tentative_g
+                f_score[neighbor] = tentative_g + heuristic(neighbor, goal)
+                heapq.heappush(open_list, (f_score[neighbor], neighbor))
+    return None
+graph = {
+    (0, 0): [(0, 1), (1, 0)],
+    (0, 1): [(0, 0), (0, 2), (1, 1)],
+    (0, 2): [(0, 1), (1, 2)],
+    (1, 0): [(0, 0), (1, 1), (2, 0)],
+    (1, 1): [(0, 1), (1, 0), (1, 2), (2, 1)],
+    (1, 2): [(0, 2), (1, 1), (2, 2)],
+    (2, 0): [(1, 0), (2, 1)],
+    (2, 1): [(1, 1), (2, 0), (2, 2)],
+    (2, 2): [(1, 2), (2, 1)]
+}
+start_node = (0, 0)
+goal_node = (2, 2)
+path = astar(graph, start_node, goal_node)
+if path:
+    print("A* Path:")
+    for node in path:
+        print(node)
+else:
+    print("No path found.")
