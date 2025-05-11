@@ -1,0 +1,50 @@
+AIM:
+To find the shortest possible route that visits each city exactly once and returns to the starting city, minimizing the total travel cost (distance/time).
+
+Travelling Salesman Problem (TSP) Algorithm Steps – Brute Force Approach
+This is a simple brute-force method that generates all permutations of cities and finds the one with the minimum total cost.
+
+Step-by-Step Algorithm:
+Input:
+
+A list of n cities.
+A distance (cost) matrix dist[i][j] representing the cost to travel from city i to city j.
+Generate all possible permutations of cities (except the starting city) to cover all possible paths.
+For each permutation:
+Add the cost from the starting city to the first city.
+Add the cost for all intermediate city-to-city travels.
+Add the cost to return to the starting city at the end.
+Track the minimum total cost and the corresponding city order.
+Output the minimum cost and path.
+
+import itertools
+
+def tsp_brute_force(distance_matrix):
+    n = len(distance_matrix)
+    cities = list(range(n))
+    min_cost = float('inf')
+    best_path = []
+
+    # Generate all permutations of cities excluding the starting city (0)
+    for perm in itertools.permutations(cities[1:]):
+        path = [0] + list(perm) + [0]  # start and end at city 0
+        cost = 0
+        for i in range(len(path) - 1):
+            cost += distance_matrix[path[i]][path[i+1]]
+        if cost < min_cost:
+            min_cost = cost
+            best_path = path
+
+    return best_path, min_cost
+
+# Example distance matrix (symmetric)
+distance_matrix = [
+    [0, 10, 15, 20],
+    [10, 0, 35, 25],
+    [15, 35, 0, 30],
+    [20, 25, 30, 0]
+]
+
+path, cost = tsp_brute_force(distance_matrix)
+print("Optimal Path:", path)
+print("Minimum Cost:", cost)
